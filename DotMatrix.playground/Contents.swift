@@ -1,5 +1,20 @@
 import Foundation
 
+extension Array {
+    func concurrentMap<B>(_ transform: @escaping (Element) -> B) -> [B] {
+        var result = Array<B?>(repeating: nil, count: count)
+        let q = DispatchQueue(label: "sync queue")
+        DispatchQueue.concurrentPerform(iterations: count) { idx in
+            let element = self[idx]
+            let transformed = transform(element)
+            q.sync {
+                result[idx] = transformed
+            }
+        }
+        return result.map { $0! }
+    }
+}
+
 func getRandomMatrix<T: Numeric>(n: Int, m: Int, randomGenerator: () -> T) -> [[T]] {
     return (0..<n).map {_ in
         (0..<m).map { _ in
@@ -22,8 +37,11 @@ func dot<T: Numeric>(a: [[T]], b: [[T]]) throws -> [[T]] {
         throw DotError.incompatibleShape
     }
     
-    return (0..<an).map { row in
-        (0..<bm).map { col in
+    let arrayRow = (0..<an).map { $0 }
+    let arrayCol = (0..<bm).map { $0 }
+
+    return arrayRow.concurrentMap { row in
+        arrayCol.concurrentMap { col in
             var tot:T = 0
             for i in 0..<am {
                 tot += a[row][i] * b[i][col]
@@ -39,8 +57,8 @@ func dot<T: Numeric>(a: [[T]], b: [[T]]) throws -> [[T]] {
 
 //let a = [[1, 2, 3], [4, 5, 6]]
 //let b = [[1, 2], [3, 4], [5, 6]]
-let a = getRandomMatrix(n: 2, m: 3, randomGenerator: { Int.random(in: 0...9) })
-let b = getRandomMatrix(n: 3, m: 5, randomGenerator: { Int.random(in: 0...9) })
+let a = getRandomMatrix(n: 4, m: 4, randomGenerator: { Int.random(in: 0...9) })
+let b = getRandomMatrix(n: 4, m: 4, randomGenerator: { Int.random(in: 0...9) })
 
 
 let c = try? dot(a: a, b: b)
