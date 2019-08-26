@@ -37,8 +37,8 @@ func dot<T: Numeric>(a: [[T]], b: [[T]]) throws -> [[T]] {
         throw DotError.incompatibleShape
     }
     
-    let arrayRow = (0..<an).map { $0 }
-    let arrayCol = (0..<bm).map { $0 }
+    let arrayRow = Array(0..<an)
+    let arrayCol = Array(0..<bm)
 
     return arrayRow.concurrentMap { row in
         arrayCol.concurrentMap { col in
