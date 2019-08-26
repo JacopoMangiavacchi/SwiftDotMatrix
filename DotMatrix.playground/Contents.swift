@@ -37,11 +37,8 @@ func dot<T: Numeric>(a: [[T]], b: [[T]]) throws -> [[T]] {
         throw DotError.incompatibleShape
     }
     
-    let arrayRow = Array(0..<an)
-    let arrayCol = Array(0..<bm)
-
-    return arrayRow.concurrentMap { row in
-        arrayCol.concurrentMap { col in
+    return Array(0..<an).concurrentMap { row in
+        Array(0..<bm).concurrentMap { col in
             var tot:T = 0
             for i in 0..<am {
                 tot += a[row][i] * b[i][col]
